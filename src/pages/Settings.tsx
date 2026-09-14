@@ -111,7 +111,7 @@ export function Settings(): JSX.Element {
     const d = String(today.getDate()).padStart(2, '0');
     const a = document.createElement('a');
     a.href = url;
-    a.download = `koushu-exam-app-${y}${m}${d}.json`;
+    a.download = `kikenbutsu-kou-exam-app-${y}${m}${d}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();

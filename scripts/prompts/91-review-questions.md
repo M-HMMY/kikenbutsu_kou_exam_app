@@ -1,7 +1,7 @@
 # 確認問題の通しレビュー（ひな形）
 
 ```bash
-codex exec --cd "C:/Dev/koushu_exam_app" --sandbox read-only --color never \
+codex exec --cd "C:/Dev/kikenbutsu_kou_exam_app" --sandbox read-only --color never \
   -o review-q-01.txt - < scripts/prompts/91-review-questions.md
 ```
 

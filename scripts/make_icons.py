@@ -16,12 +16,12 @@
 **色は姉妹アプリとぶつからないように選ぶこと。** デスクトップとホーム画面に
 4 つ以上並ぶので、色が近いと見分けられない。現在の割り当ては次のとおり。
 
-  fe_exam_app              紺 → 青    「FE」
-  e_exam_app               紺 → 青    「E」
-  itpassport_exam_app      緑 → 青緑  「iP」
-  g_exam_app               紺 → 青    「G」
-  genai_passport_exam_app  紫 → 藤色  「AI」
-  otsu4_exam_app           朱 → 橙    「4」
+  fe_exam_app                紺 → 青    「FE」
+  e_exam_app                 紺 → 青    「E」
+  itpassport_exam_app        緑 → 青緑  「iP」
+  g_exam_app                 紺 → 青    「G」
+  genai_passport_exam_app    紫 → 藤色  「AI」
+  kikenbutsu_otsu4_exam_app  朱 → 橙    「4」
   **このアプリ**           **黒鉄 → 金**  **「A」**
 
 字は「甲」ではなく「A」にしてある。この描画は座標で書いた多角形なので、

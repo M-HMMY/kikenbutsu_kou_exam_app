@@ -6,7 +6,17 @@
  *   - ナビゲーション（ページ遷移）: ネットワーク優先。失敗したらキャッシュした index を返す
  *   - それ以外の同一オリジンの GET: キャッシュ優先 + 裏で更新（stale-while-revalidate）
  */
-const CACHE = 'koushu-exam-app-v1';
+
+/*
+ * **キャッシュ名には、必ずこのアプリ固有の接頭辞を付ける。**
+ * Cache Storage はオリジン単位なので、姉妹アプリを同じドメイン（github.io）に
+ * 並べると 1 つの入れ物を共有する。activate で「自分以外」を消すと、
+ * 隣のアプリのオフラインキャッシュまで巻き添えにする。
+ * 消してよいのは、自分の接頭辞が付いたものだけ。
+ */
+const CACHE_PREFIX = 'kikenbutsu-kou-exam-app-';
+const CACHE = CACHE_PREFIX + 'v1';
+
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -23,7 +33,10 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => {
+        const mine = keys.filter((k) => k !== CACHE && k.startsWith(CACHE_PREFIX));
+        return Promise.all(mine.map((k) => caches.delete(k)));
+      })
       .then(() => self.clients.claim()),
   );
 });

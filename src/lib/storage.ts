@@ -1,6 +1,6 @@
 import type { AppState } from '../types';
 
-const KEY = 'koushu-exam-app-state-v1';
+const KEY = 'kikenbutsu-kou-exam-app-state-v1';
 
 export const emptyState: AppState = {
   version: 1,
