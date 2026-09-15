@@ -38,7 +38,13 @@ jobs:
       - name: 型チェックとビルド
         run: npm run build
 
+      # enablement: true を付けると、Pages が未設定のリポジトリでも
+      # このステップが有効化まで行う。付けないと Settings → Pages → Source を
+      # 手で「GitHub Actions」にするまで、build は通るのに deploy だけが落ちる。
+      # 最初の 1 回しか効かない設定だが、その 1 回が分かりにくい落ち方をする。
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
