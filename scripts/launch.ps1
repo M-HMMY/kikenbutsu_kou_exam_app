@@ -1,4 +1,4 @@
-﻿# 危険物乙4 学習アプリ のランチャ
+﻿# 危険物甲種 学習アプリ のランチャ
 # デスクトップのショートカットから呼ばれる。
 #   1. すでに起動していればブラウザを開くだけ
 #   2. 必要なら依存パッケージのインストールとビルドを行う
@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$Host.UI.RawUI.WindowTitle = '危険物乙4 学習アプリ'
+$Host.UI.RawUI.WindowTitle = '危険物甲種 学習アプリ'
 
 $port = 4173
 $url = "http://localhost:$port/"
@@ -24,7 +24,7 @@ function Test-Server {
 }
 
 Write-Host ''
-Write-Host '  危険物乙4 学習アプリ' -ForegroundColor Cyan
+Write-Host '  危険物甲種 学習アプリ' -ForegroundColor Cyan
 Write-Host '  ------------------------------'
 Write-Host ''
 

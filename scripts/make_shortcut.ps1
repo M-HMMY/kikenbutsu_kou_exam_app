@@ -20,7 +20,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $target = Join-Path $PSScriptRoot 'launch.cmd'
 $icon = Join-Path $PSScriptRoot 'app.ico'
 $desktop = [Environment]::GetFolderPath('Desktop')
-$linkPath = Join-Path $desktop '危険物乙4 学習アプリ.lnk'
+$linkPath = Join-Path $desktop '危険物甲種 学習アプリ.lnk'
 
 foreach ($p in @($target, $icon)) {
     if (-not (Test-Path $p)) { throw "見つかりません: $p" }
@@ -31,7 +31,7 @@ $link = $shell.CreateShortcut($linkPath)
 $link.TargetPath = $target
 $link.WorkingDirectory = $root
 $link.IconLocation = "$icon,0"
-$link.Description = '危険物取扱者試験 乙種第4類の学習アプリを起動します'
+$link.Description = '危険物取扱者試験 甲種の学習アプリを起動します'
 $link.WindowStyle = 1
 $link.Save()
 
