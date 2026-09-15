@@ -13,24 +13,24 @@ codex exec --cd "C:/Dev/kikenbutsu_kou_exam_app" --sandbox workspace-write --col
 
 **このファイルの「---」より下がプロンプト本体です。**「担当章」の 3 行を、そのつど書き換えてください。
 
-## 章ごとの問題数（母集団は本番 35 問の 3 倍＝105 問）
+## 章ごとの問題数（母集団は本番 45 問の 3 倍＝135 問）
 
-**ちょうど 35 問だと、本番形式の模試が毎回まったく同じ 35 問になります。**
+**ちょうど 45 問だと、本番形式の模試が毎回まったく同じ 45 問になります。**
 本番の出題数の 3 倍を目安にしてあります。
 
-**科目ごとの合計は公表値の 3 倍と一致させてください**（法令 45 / 物化 30 / 性消 30）。
+**科目ごとの合計は公表値の 3 倍と一致させてください**（法令 45 / 物化 30 / **性消 60**）。
 
 | 章 ID | ファイル | 配列名 | 問題数 |
 | --- | --- | --- | --- |
-| `law-what` | `src/data/questions/law-what.ts` | `lawWhatQuestions` | 12 |
-| `law-place` | `src/data/questions/law-place.ts` | `lawPlaceQuestions` | 12 |
+| `law-what` | `src/data/questions/law-what.ts` | `lawWhatQuestions` | 9 |
+| `law-place` | `src/data/questions/law-place.ts` | `lawPlaceQuestions` | 9 |
 | `law-people` | `src/data/questions/law-people.ts` | `lawPeopleQuestions` | 12 |
-| `law-rule` | `src/data/questions/law-rule.ts` | `lawRuleQuestions` | 9 |
+| `law-rule` | `src/data/questions/law-rule.ts` | `lawRuleQuestions` | 15 |
 | `sci-base` | `src/data/questions/sci-base.ts` | `sciBaseQuestions` | 15 |
 | `sci-burn` | `src/data/questions/sci-burn.ts` | `sciBurnQuestions` | 9 |
 | `sci-stop` | `src/data/questions/sci-stop.ts` | `sciStopQuestions` | 6 |
-| `prop-common` | `src/data/questions/prop-common.ts` | `propCommonQuestions` | 15 |
-| `prop-each` | `src/data/questions/prop-each.ts` | `propEachQuestions` | 15 |
+| `prop-common` | `src/data/questions/prop-common.ts` | `propCommonQuestions` | 6 |
+| `prop-1` 〜 `prop-6` | `src/data/questions/prop-1.ts` 〜 `prop-6.ts` | `prop1Questions` 〜 `prop6Questions` | **各 9** |
 
 ---
 
@@ -41,7 +41,7 @@ codex exec --cd "C:/Dev/kikenbutsu_kou_exam_app" --sandbox workspace-write --col
 
 - **章 ID**: `law-what` ← **書き換える**
 - **書くファイル**: `src/data/questions/law-what.ts` ← **書き換える**
-- **問題数**: **12 問** ← **書き換える**
+- **問題数**: **9 問** ← **書き換える**
 
 ## まず読むもの
 
@@ -49,7 +49,7 @@ codex exec --cd "C:/Dev/kikenbutsu_kou_exam_app" --sandbox workspace-write --col
 2. **`src/data/textbook/<担当章 ID>.ts`** … **担当章の教本本文。問題はここから出します。
    教本に書いていないことを問わないでください**
 3. **`docs/primary-numbers.md`** … **数値の一次資料台帳。数字を問う問題は、必ずここの値を使うこと**
-4. **`docs/public-questions.md`** … **本番 35 問が何をどう問うたかの分析。
+4. **`docs/public-questions.md`** … **本番 45 問が何をどう問うたかの分析。
    設問の形の比率と、誤答の作り方をここに合わせてください**
 5. `docs/syllabus.md` の担当項目 … 範囲の外に出ないため
 6. `src/types.ts` の `Question` … 書き込む型
@@ -65,11 +65,12 @@ codex exec --cd "C:/Dev/kikenbutsu_kou_exam_app" --sandbox workspace-write --col
 
 ## 試験の形（問題の作り方を決める前提）
 
-- **五肢択一式。35 問を 120 分（1 問あたり約 3 分 26 秒）。**
+- **五肢択一式。45 問を 150 分（1 問あたり 3 分 20 秒）。**
   **四肢択一ではありません。選択肢は 5 つです**
 - **時間には余裕があります。**読み切るのが精一杯ということはないので、
   **条文を読ませるやや長い問題も成立します**
-- **計算が出るのは物化だけ**です。しかも**試験会場で電卓が使えない**ので、四則演算に限ります
+- **計算は物化だけではありません。**甲種では**法令にも計算が出ます**（指定数量の倍数、防油堤の容量）。
+  しかも**試験会場で電卓が使えない**ので、手で解ける形にしてください
 - **落とすとしたら数字と、似た制度の取り違えです。**
   指定数量・引火点・保安距離、そして「許可か承認か認可か届出か」
 
@@ -141,12 +142,15 @@ codex exec --cd "C:/Dev/kikenbutsu_kou_exam_app" --sandbox workspace-write --col
 
 ## 設問の形は本番の比率に寄せる
 
-**本番 35 問の内訳はこうでした**（`docs/public-questions.md`）。
+**本番 45 問の内訳はこうでした**（`docs/public-questions.md`）。
 
 | 形 | 本番 | あなたの担当 |
 | --- | --- | --- |
-| **誤っているもの / 妥当でないもの / 該当しないもの**を選ぶ | **22 問（63 %）** | **6 割前後に** |
-| **正しいもの**を選ぶ（穴埋め・計算を含む） | 12 問（34 %） | 3 割強 |
+| **誤っているもの / 妥当でないもの / 該当しないもの**を選ぶ | **26 問（58 %）** | **6 割前後に** |
+| **正しいもの**を選ぶ（穴埋め・計算を含む） | 19 問（42 %） | 4 割前後 |
+
+**科目ごとに見ると、法令 11/15、物化 4/10、性消 11/20 でした。**
+**物化は「正しいものを選ぶ」が多め**になります。
 
 **「正しいものを選ぶ」ばかりにしないでください。**本番と手応えが変わります。
 

@@ -174,7 +174,16 @@ for (const q of QUESTIONS) {
   // 「すべて」は数え方が難しい。「すべての入力に対して」のようなただの記述まで
   // 拾ってしまうので、断定を強める語だけを見る。
   // 「常に」は部分一致だと「非常に」「通常に」まで拾ってしまうので、直前の字で除く。
-  const absolute = /必ず|(?<![非通日])常に|まったく|全く|一切|絶対|例外なく|いかなる場合|どのような場合|どんな場合|一律|あらゆる/;
+  // 「絶対」も、物化の「絶対温度」を拾ってしまうので除く。
+  const absolute = /必ず|(?<![非通日])常に|まったく|全く|一切|絶対(?!温度)|例外なく|いかなる場合|どのような場合|どんな場合|一律|あらゆる/;
+  // **全称の量化も、同じ手掛かりになる。**
+  // 上の absolute から「すべて」を外してあるのは「すべての入力に対して」のような
+  // ただの記述まで拾うからだが、**選択肢の中では全称そのものが言い切り**である。
+  // 実際 q-pc-1 は、誤答 4 つが「すべてが」「いずれも」で、正解だけが平叙文だった。
+  // absolute が 1 つも当たらないので、下の 1 問ごとの検査を素通りしていた。
+  // 主語や対象を量化している形だけを見る（「すべて選べ」は設問側なのでここには来ない）。
+  const universal = /すべてが|全てが|すべて[のはを、]|全て[のはを、]|いずれも|いずれの|どれも|例外なく/;
+  const tell = (c: string) => absolute.test(c) || universal.test(c);
   for (const q of QUESTIONS) {
     const right = new Set(answerIndices(q.answer));
     if (!isMultiAnswer(q.answer)) {
@@ -184,7 +193,7 @@ for (const q of QUESTIONS) {
     // 空白は見た目の長さに効かないので、除いてから数える。
     const lens = q.choices.map((c) => c.replace(/\s/g, '').length);
     q.choices.forEach((c, i) => {
-      if (!absolute.test(c)) return;
+      if (!tell(c)) return;
       if (right.has(i)) absoluteInCorrect += 1;
       else absoluteInWrong += 1;
     });
@@ -212,8 +221,24 @@ for (const q of QUESTIONS) {
     //
     // **「3 つすべて」では緩すぎた。** 2 つ消去できれば残りは二択になり、
     // それだけで正答率が 25 % から 50 % に上がる。2 つ以上で数える。
-    const wrongAbsolute = q.choices.filter((_, i) => !right.has(i)).filter((c) => absolute.test(c)).length;
-    if (wrongAbsolute >= 2 && !q.choices.some((c, i) => right.has(i) && absolute.test(c))) {
+    const wrongAbsolute = q.choices.filter((_, i) => !right.has(i)).filter(tell).length;
+
+    // **裏返しの型もある。**「誤っているものはどれか」で、言い切りが正解肢にだけ付いていると、
+    // 「言い切っているものを選ぶ」だけで当てられてしまう。正誤が逆なので、
+    // 上の wrongAbsolute では拾えない。
+    //
+    // **「正しいものはどれか」では警告しない。**そちらで正解側に言い切りが付くのは、
+    // 「正しく言い切れる場面では正解側にも使う」という下の集計の助言どおりの形で、
+    // むしろ「言い切りは誤答」という当て推量を外しにいく側だから。
+    const picksWrong = /誤って|誤りな|適切でない|妥当でない|該当しない|正しくない|含まれない/.test(q.question);
+    if (picksWrong && wrongAbsolute === 0 && q.choices.some((c, i) => right.has(i) && tell(c))) {
+      warn(
+        `問題 ${q.id}: 「誤っているもの」を選ばせる問いで、言い切りが正解肢にだけある。` +
+          '言い切っているものを選ぶだけで当てられるので、誤答側にも言い切りを置くか、正解肢を具体的な誤りに書き直すこと',
+      );
+    }
+
+    if (wrongAbsolute >= 2 && !q.choices.some((c, i) => right.has(i) && tell(c))) {
       warn(
         `問題 ${q.id}: 誤答 ${wrongAbsolute} つに言い切りがあり、正解にはない。` +
           '言い切りを外すだけで選べてしまうので、誤答側からも言い切りを減らすこと',
@@ -360,7 +385,10 @@ for (const q of QUESTIONS) {
   const KANJI: Record<string, number> = {
     一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10,
   };
-  const NUM = /([0-9０-９]+|[一二三四五六七八九十])\s*つ/;
+  // **「N つ」だけでは足りなかった。**「固体の燃え方は 3 通り」と題した compare 図に
+  // 4 対（8 セル）が入っていて、素通りした（2026 年 9 月 15 日、別の目によるレビューで発覚）。
+  // 日本語の数え方はいくつもあるので、図の題に出そうな助数詞をまとめて見る。
+  const NUM = /([0-9０-９]+|[一二三四五六七八九十])\s*(?:つ|通り|種類|段階|区分)/;
   const KEYS = new Set(['title', 'top', 'bottom', 'x', 'y', 'note', 'actors', 'caption']);
   const toNum = (t: string): number =>
     KANJI[t] ?? Number(t.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)));
@@ -381,15 +409,21 @@ for (const q of QUESTIONS) {
       const m = NUM.exec(title);
       if (m !== null) {
         const want = toNum(m[1]);
+        // **compare は「左右の見出しの数」と「セル対の数」の両方を許す。**
+        // 「2 つの制度」なら actors の 2、「4 通りの燃え方」なら対の数（要素 ÷ 2）を指している。
+        const pairs = Math.floor(top / 2);
         const ok =
           type === 'compare'
-            ? actors === 0 || want === actors
+            ? (actors === 0 && top === 0) || want === actors || want === pairs
             : type === 'tree'
               ? want === top || want === children
               : top === 0 || want === top;
         if (!ok) {
-          const actual = type === 'compare' ? `左右の見出し ${actors} 個` : `要素 ${top} 個`;
-          warn(`教本 ${s.id}: 図の題「${title}」は ${want} つと言っているが、${actual}`);
+          const actual =
+            type === 'compare'
+              ? `左右の見出し ${actors} 個 / セルの対 ${pairs} 組`
+              : `要素 ${top} 個`;
+          warn(`教本 ${s.id}: 図の題「${title}」は ${want} と数えているが、${actual}`);
         }
       }
       type = null;
@@ -449,6 +483,23 @@ for (const q of QUESTIONS) {
     scan(`問題 ${q.id}`, q.explanation);
     q.choices.forEach((c) => scan(`問題 ${q.id}`, c));
   }
+}
+
+// ---- 強調が行をまたいでいないか ----
+// **強調** は markdown.tsx の inline() が 1 行ずつ処理する。
+// **行をまたぐと閉じられず、`**` がそのまま画面に出る。**
+// 描画自体は成立するので描画検査は通り、型でも防げない。
+// 本文を折り返して書き直したときに出る型で、実際に pe-1 で出した。
+for (const s of SECTIONS) {
+  s.body.split(LF).forEach((line, i) => {
+    const n = (line.match(/\*\*/g) ?? []).length;
+    if (n % 2 === 1) {
+      err(
+        `教本 ${s.id}: ${i + 1} 行目で ** の数が奇数。強調は行をまたげないので ` +
+          `\`**\` がそのまま出る → ${line.trim().slice(0, 50)}`,
+      );
+    }
+  });
 }
 
 // ---- 節の骨格 ----
@@ -578,6 +629,17 @@ for (const s of SECTIONS) {
           err(
             `教本 ${s.id}: compare の全 ${items} 要素に :: が付いている。` +
               '`::` は左右の区切りではなく補足。左右の対は 1 行 1 セルで書く',
+          );
+        }
+        // **matrix は 2 × 2 の 4 セルしか描けない。**
+        // `Diagram.tsx` の Matrix は `items.slice(0, 4)` で、5 個目以降を**黙って捨てる**。
+        // 3 × 2 の表を書いたところ、主題だった 2 つの操作が画面から消えていた
+        // （2026 年 9 月 15 日、別の目によるレビューで発覚）。
+        // 記法としては正しく、描画検査も通るので、ここで数えるしかない。
+        if (type === 'matrix' && items > 4) {
+          err(
+            `教本 ${s.id}: matrix の要素が ${items} 個ある。` +
+              'Matrix は 2 × 2 の 4 セルしか描けず、5 個目以降は黙って捨てられる。表に置き換えること',
           );
         }
         type = null;

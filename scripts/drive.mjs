@@ -176,23 +176,33 @@ function isMulti() {
   return evaluate(`document.querySelector('.tag-multi') !== null`);
 }
 
-// 教本の節。**甲種の章立てはまだ確定していない。**
+// 教本の節。**50 節ぶんを手で並べてある。**
 //
-// 乙 4 版では、ここに 43 節の id を**手で並べて**あった。
-// わざとそうしてある：`SECTIONS` から自動で拾うと、
+// **わざと手で並べている。**`SECTIONS` から自動で拾うと、
 // **節が 1 つ消えても気づけない**（その節を開かなくなるだけで、エラーにならない）。
 //
-// **章立てが決まったら、同じように手で並べ直してください。**
-// いまは `SECTIONS` から拾うが、これは節がまだ無いための仮の形である。
-const SECTION_IDS = await evaluate(
-  `(() => {
-     const links = [...document.querySelectorAll('a[href^="#/textbook/"], button')]
-       .map((e) => (e.getAttribute('href') || '').replace('#/textbook/', ''))
-       .filter((h) => h.length > 0);
-     return [...new Set(links)];
-   })()`,
-);
-const ALL_SECTIONS = Array.isArray(SECTION_IDS) ? SECTION_IDS : [];
+// **★ 以前は、開いているページのリンクから拾おうとしていた。**
+// ところがこの行はアプリを開く前に走るので、**毎回 0 件**になり、
+// 「教本の節」の欄が空のまま「異常なし」に見えていた。**黙って何も見ない検査**だった。
+//
+// 節を足す・減らすときは、`docs/section-plan.md` と合わせてここも直すこと。
+const ALL_SECTIONS = [
+  'i-1', 'i-2', 'i-3', 'i-4',
+  'lw-1', 'lw-2', 'lw-3', 'lw-4',
+  'lp-1', 'lp-2', 'lp-3', 'lp-4',
+  'lm-1', 'lm-2', 'lm-3', 'lm-4',
+  'lr-1', 'lr-2', 'lr-3', 'lr-4', 'lr-5',
+  'sb-1', 'sb-2', 'sb-3', 'sb-4', 'sb-5', 'sb-6', 'sb-7',
+  'sf-1', 'sf-2', 'sf-3',
+  'ss-1', 'ss-2', 'ss-3',
+  'pg-1', 'pg-2', 'pg-3', 'pg-4',
+  'pa-1', 'pa-2',
+  'pb-1', 'pb-2',
+  'pc-1', 'pc-2',
+  'pd-1', 'pd-2',
+  'pe-1', 'pe-2',
+  'pf-1', 'pf-2',
+];
 
 const report = [];
 const show = (title, body) => report.push(`\n===== ${title} =====\n${body}`);
@@ -200,9 +210,8 @@ const show = (title, body) => report.push(`\n===== ${title} =====\n${body}`);
 // ============================================================
 // 筋書き — ここだけ書き換えて使う
 //
-// **いまは入門編 4 節・問題 0 問。**確認問題が入ったら、
-// 姉妹アプリと同じく「節 → 確認問題を 1 問解いて採点 → 模試 → 体験ツール」まで
-// 押すように書き換えること。いまは入門編 4 節が描けるかまでを見ている。
+// **教本 50 節 / 確認問題 135 問 / 計算ドリル 5 種類 / 体験ウィジェット 3 個。**
+// 「全節を開く → 確認問題を解いて採点 → ドリル → 体験ツール → 模試」まで押す。
 // ============================================================
 
 await send('Page.enable');
@@ -372,10 +381,10 @@ show('体験ツールの一覧', (await visible()).slice(0, 600));
 {
   const toolReport = [];
   const ids = await evaluate(`window.__widgetIds ?? null`);
-  toolReport.push('教本に埋め込んだウィジェット: baisu / inkaten / shouka');
+  toolReport.push('教本に埋め込んだウィジェット: baisu / shoka / konsai');
 
   // 教本の節に埋め込んだものを、節ごと開いて操作する
-  for (const [sec, wid] of [['lw-4', 'baisu'], ['sf-2', 'inkaten'], ['ss-1', 'shouka']]) {
+  for (const [sec, wid] of [['lw-4', 'baisu'], ['lr-5', 'shoka'], ['pg-2', 'konsai']]) {
     await go(`#/textbook/${sec}`);
     const found = await evaluate(`document.querySelectorAll('.widget').length`);
     if (!found) {
