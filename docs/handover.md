@@ -757,6 +757,18 @@ def edit(path, pairs):
 - **`deploy.yml` の対象ブランチを実際の既定ブランチに合わせる**（前述）
 - GitHub で空のリポジトリを作る → `git remote add origin` → `git push -u origin main` →
   Settings → Pages → Source を **GitHub Actions** に
+- **★ `git remote add` は GitHub 側に何も作りません。**宛先をローカルに書くだけです。
+  リポジトリを作る前に push すると `Repository not found` になります。
+  **エディタの UI からだと「消されたか、名前が変わったか、権限が無いか」と出る**ので、
+  「作っていない」だとは読み取れません。**`git ls-remote origin` で切り分けてください**
+- **★ Pages の Source を設定する前に push すると、最初の実行は deploy で落ちます。**
+  build までは通るので、Actions が緑にならない理由が分かりにくい。
+  **`actions/configure-pages` に `enablement: true` を付けると、ワークフローが自分で有効化します。**
+  手動設定を残すなら、**push の前に設定を済ませておくほうが早い**
+- **★ 公開されたか確かめるときに、GitHub API をポーリングしないこと。**
+  未認証だと **1 時間あたり 60 回**で、間隔なしのループはすぐ使い切ります。
+  **公開 URL を直接叩けば十分**です（`curl -o /dev/null -w '%{http_code}'`）。
+  Pages が未設定なら 404 で「Site not found」が返り、有効なら 200 でアプリが返ります
 - **Service Worker は HTTPS でしか動きません。**同じ Wi-Fi の `http://192.168.x.x:5173` では
   閲覧できてもオフライン保存は効きません。**ホーム画面に入れて使うには公開が必要です**
 - `public/icons/` は**透過なしの正方形**。iOS は透明な画素を黒で塗ります
