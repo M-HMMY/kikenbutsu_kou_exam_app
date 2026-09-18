@@ -357,8 +357,12 @@ npm run build
     **指摘の採否を判断して反映しました。**内訳は下の「レビューで何を直したか」にあります
 13. ~~**公開する**~~ … **済。**8 コミットに分けて push し、GitHub Pages で配信している。
     **★ Pages の Source は「GitHub Actions」に手で設定する必要があります。**
-    `actions/configure-pages` に `enablement: true` を付けていないので、
-    最初の実行は deploy のステップで落ちます（build は通る）。次のアプリでは先に設定すること
+    最初の実行は deploy のステップで落ちます（build は通る）。
+    **★ `enablement: true` を付けても同じです**（2026 年 9 月 19 日、8 本目で実測）。
+    Pages サイトの作成には admin 権限が要り、`GITHUB_TOKEN` では弾かれるので、
+    **落ちる場所が configure-pages に前倒しになるだけ**でした。
+    このリポジトリの `deploy.yml` にも付けてありますが、**手での設定は省けません。**
+    次のアプリでも先に設定すること
 
 ---
 
